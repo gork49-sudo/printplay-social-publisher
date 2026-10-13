@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Social Publisher</title>
+<style>
+:root{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#151515;background:#f4f5f7}
+*{box-sizing:border-box} body{margin:0}.app{max-width:520px;margin:auto;min-height:100vh;padding:22px 16px 40px}
+h1{font-size:28px;margin:8px 0 4px}.sub{color:#666;margin:0 0 22px}.card{background:white;border-radius:20px;padding:16px;margin:12px 0;box-shadow:0 5px 24px rgba(0,0,0,.06)}
+.upload{border:2px dashed #bbb;border-radius:16px;padding:26px;text-align:center;cursor:pointer}.upload input{display:none}
+textarea{width:100%;min-height:120px;border:1px solid #ddd;border-radius:14px;padding:12px;font:inherit;resize:vertical}
+.row{display:flex;align-items:center;justify-content:space-between;padding:13px 2px;border-bottom:1px solid #eee}.row:last-child{border:0}
+.switch{width:48px;height:28px;accent-color:#111}.publish{width:100%;border:0;border-radius:16px;background:#111;color:white;font-size:18px;font-weight:700;padding:16px;margin-top:14px}
+.publish:disabled{opacity:.45}.name{font-weight:650}.status{font-size:13px;color:#777}.ok{color:#16803a}.warn{color:#a15c00}
+video{width:100%;max-height:280px;border-radius:14px;margin-top:12px;background:#000;display:none}
+.counter{text-align:center;color:#777;font-size:13px;margin-top:10px}
+</style>
+</head>
+<body><main class="app">
+<h1>Опубликовать видео</h1>
+<p class="sub">Один ролик → три площадки</p>
+
+<section class="card">
+<label class="upload">📹 <strong>Выбрать готовое видео</strong><br><span id="fileName">из Фото / Файлов</span>
+<input id="videoFile" type="file" accept="video/*"></label>
+<video id="preview" controls playsinline></video>
+</section>
+
+<section class="card">
+<label class="name" for="caption">Описание</label>
+<textarea id="caption" placeholder="Напиши описание и хэштеги…"></textarea>
+</section>
+
+<section class="card">
+<div class="row"><div><div class="name">TikTok</div><div class="status" id="s-tiktok">выбрано</div></div><input class="switch platform" data-id="tiktok" type="checkbox" checked></div>
+<div class="row"><div><div class="name">Instagram Reels</div><div class="status" id="s-instagram">выбрано</div></div><input class="switch platform" data-id="instagram" type="checkbox" checked></div>
+<div class="row"><div><div class="name">YouTube Shorts</div><div class="status" id="s-youtube">выбрано</div></div><input class="switch platform" data-id="youtube" type="checkbox" checked></div>
+</section>
+
+<button id="publish" class="publish" disabled>Опубликовать</button>
+<div class="counter">Сегодня: <span id="count">0</span> / 20</div>
+</main>
+<script>
+const file=document.querySelector('#videoFile'), preview=document.querySelector('#preview'),
+btn=document.querySelector('#publish'), nameEl=document.querySelector('#fileName');
+const countEl=document.querySelector('#count');
+let count=Number(localStorage.getItem('dailyCount')||0);
+countEl.textContent=count;
+
+file.addEventListener('change',()=>{
+ const f=file.files[0];
+ if(!f)return;
+ nameEl.textContent=f.name;
+ preview.src=URL.createObjectURL(f); preview.style.display='block'; btn.disabled=false;
+});
+document.querySelectorAll('.platform').forEach(x=>x.addEventListener('change',()=>{
+ document.querySelector('#s-'+x.dataset.id).textContent=x.checked?'выбрано':'выключено';
+}));
+btn.addEventListener('click',async()=>{
+ const selected=[...document.querySelectorAll('.platform:checked')];
+ if(!file.files[0]||!selected.length)return;
+ btn.disabled=true; btn.textContent='Публикация…';
+ for(const x of selected){
+   const s=document.querySelector('#s-'+x.dataset.id);
+   s.textContent='API ещё не подключён'; s.className='status warn';
+ }
+ await new Promise(r=>setTimeout(r,500));
+ btn.textContent='Подключить API для публикации';
+ btn.disabled=false;
+});
+</script></body></html>
